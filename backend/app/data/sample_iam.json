@@ -1,0 +1,103 @@
+{
+  "account_id": "123456789012",
+  "principals": [
+    {
+      "id": "user:alice",
+      "name": "alice",
+      "kind": "User",
+      "trust": [],
+      "policies": [
+        {
+          "effect": "Allow",
+          "actions": [
+            "iam:PassRole",
+            "lambda:CreateFunction",
+            "lambda:InvokeFunction"
+          ],
+          "resources": ["*"]
+        }
+      ]
+    },
+    {
+      "id": "user:bob",
+      "name": "bob",
+      "kind": "User",
+      "trust": [],
+      "policies": [
+        {
+          "effect": "Allow",
+          "actions": ["iam:CreateAccessKey"],
+          "resources": ["user:admin-user"]
+        }
+      ]
+    },
+    {
+      "id": "user:charlie",
+      "name": "charlie",
+      "kind": "User",
+      "trust": [],
+      "policies": [
+        {
+          "effect": "Allow",
+          "actions": ["sts:AssumeRole"],
+          "resources": ["role:operations-admin"]
+        }
+      ]
+    },
+    {
+      "id": "user:admin-user",
+      "name": "admin-user",
+      "kind": "User",
+      "trust": [],
+      "policies": [
+        {
+          "effect": "Allow",
+          "actions": ["*"],
+          "resources": ["*"]
+        }
+      ]
+    },
+    {
+      "id": "role:dev-role",
+      "name": "dev-role",
+      "kind": "Role",
+      "trust": ["user:developer"],
+      "policies": [
+        {
+          "effect": "Allow",
+          "actions": [
+            "iam:AttachRolePolicy",
+            "iam:PutRolePolicy"
+          ],
+          "resources": ["role:dev-role"]
+        }
+      ]
+    },
+    {
+      "id": "role:lambda-admin",
+      "name": "lambda-admin",
+      "kind": "Role",
+      "trust": ["service:lambda.amazonaws.com"],
+      "policies": [
+        {
+          "effect": "Allow",
+          "actions": ["*"],
+          "resources": ["*"]
+        }
+      ]
+    },
+    {
+      "id": "role:operations-admin",
+      "name": "operations-admin",
+      "kind": "Role",
+      "trust": ["user:charlie"],
+      "policies": [
+        {
+          "effect": "Allow",
+          "actions": ["*"],
+          "resources": ["*"]
+        }
+      ]
+    }
+  ]
+}
