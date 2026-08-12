@@ -90,3 +90,41 @@ npm run dev
 * Continuous monitoring
 * Interactive attack graph
 * AI remediation suggestions
+
+## Enhanced Research Features
+
+This enhanced version adds:
+
+- A read-only Boto3 IAM collector for users, roles, managed policies, inline policies, and role trust policies
+- Three additional privilege-escalation techniques
+- Transparent multi-factor risk scoring
+- Automated unit tests
+- A reproducible synthetic benchmark
+- A report improvement and evaluation guide
+
+### Run tests
+
+```bash
+cd backend
+pytest -q
+```
+
+### Run the benchmark
+
+```bash
+cd backend
+python scripts/benchmark.py --sizes 10 100 500 1000 --repetitions 5
+```
+
+### Analyze an AWS account
+
+Use temporary credentials for a read-only audit role. The collector calls IAM List/Get APIs and STS `GetCallerIdentity`; it does not modify AWS resources.
+
+```bash
+cd backend
+python scripts/analyze_aws.py --profile your-audit-profile --output aws_analysis.json
+```
+
+### Important analysis limitations
+
+The current evaluator does not fully resolve IAM conditions, permission boundaries, service control policies, session policies, or all resource-based policies. Findings must therefore be presented as configuration-based attack opportunities, not proof that exploitation will always succeed.

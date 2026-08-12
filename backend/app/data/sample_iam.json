@@ -3,6 +3,7 @@
   "principals": [
     {
       "id": "user:alice",
+      "arn": "arn:aws:iam::123456789012:user/alice",
       "name": "alice",
       "kind": "User",
       "trust": [],
@@ -20,6 +21,7 @@
     },
     {
       "id": "user:bob",
+      "arn": "arn:aws:iam::123456789012:user/bob",
       "name": "bob",
       "kind": "User",
       "trust": [],
@@ -27,12 +29,13 @@
         {
           "effect": "Allow",
           "actions": ["iam:CreateAccessKey"],
-          "resources": ["user:admin-user"]
+          "resources": ["arn:aws:iam::123456789012:user/admin-user"]
         }
       ]
     },
     {
       "id": "user:charlie",
+      "arn": "arn:aws:iam::123456789012:user/charlie",
       "name": "charlie",
       "kind": "User",
       "trust": [],
@@ -40,12 +43,13 @@
         {
           "effect": "Allow",
           "actions": ["sts:AssumeRole"],
-          "resources": ["role:operations-admin"]
+          "resources": ["arn:aws:iam::123456789012:role/operations-admin"]
         }
       ]
     },
     {
       "id": "user:admin-user",
+      "arn": "arn:aws:iam::123456789012:user/admin-user",
       "name": "admin-user",
       "kind": "User",
       "trust": [],
@@ -59,6 +63,7 @@
     },
     {
       "id": "role:dev-role",
+      "arn": "arn:aws:iam::123456789012:role/dev-role",
       "name": "dev-role",
       "kind": "Role",
       "trust": ["user:developer"],
@@ -69,12 +74,13 @@
             "iam:AttachRolePolicy",
             "iam:PutRolePolicy"
           ],
-          "resources": ["role:dev-role"]
+          "resources": ["arn:aws:iam::123456789012:role/dev-role"]
         }
       ]
     },
     {
       "id": "role:lambda-admin",
+      "arn": "arn:aws:iam::123456789012:role/lambda-admin",
       "name": "lambda-admin",
       "kind": "Role",
       "trust": ["service:lambda.amazonaws.com"],
@@ -88,6 +94,7 @@
     },
     {
       "id": "role:operations-admin",
+      "arn": "arn:aws:iam::123456789012:role/operations-admin",
       "name": "operations-admin",
       "kind": "Role",
       "trust": ["user:charlie"],

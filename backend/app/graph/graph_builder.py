@@ -14,11 +14,7 @@ class GraphBuilder:
         uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
         user = os.getenv("NEO4J_USER", "neo4j")
         password = os.getenv("NEO4J_PASSWORD", "cloudpathpass")
-
-        self.driver = GraphDatabase.driver(
-            uri,
-            auth=(user, password),
-        )
+        self.driver = GraphDatabase.driver(uri, auth=(user, password))
 
     def close(self) -> None:
         self.driver.close()
@@ -30,32 +26,53 @@ class GraphBuilder:
         with self.driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n").consume()
 
-    def write_dataset(
-        self,
-        dataset: Dataset,
-        findings: list[Finding],
-    ) -> None:
+    def write_dataset(self, dataset: Dataset, findings: list[Finding]) -> None:
+        principals = [principal.model_dump() for principal in dataset.principals]
+        finding_rows = [finding.model_dump() for finding in findings]
+
+        statement_rows: list[dict] = []
+        trust_rows: list[dict[str, str]] = []
+        for principal in principals:
+            for statement_index, statement in enumerate(principal["policies"]):
+                statement_rows.append(
+                    {
+                        "principal_id": principal["id"],
+                        "statement_id": f"{principal['id']}:statement:{statement_index}",
+                        "effect": statement["effect"],
+                        "actions": statement["actions"],
+                        "resources": statement["resources"],
+                        "conditional": statement["condition"] is not None,
+                        "unsupported_elements": statement["unsupported_elements"],
+                        "source_policy_arn": statement["source_policy_arn"],
+                    }
+                )
+            for trusted_principal in principal["trust"]:
+                trust_rows.append(
+                    {
+                        "trusted_principal": trusted_principal,
+                        "role_id": principal["id"],
+                    }
+                )
+
         with self.driver.session() as session:
             session.execute_write(
-                self._write_account,
+                self._write_all,
                 dataset.account_id,
+                principals,
+                statement_rows,
+                trust_rows,
+                finding_rows,
             )
 
-            for principal in dataset.principals:
-                session.execute_write(
-                    self._write_principal,
-                    dataset.account_id,
-                    principal.model_dump(),
-                )
-
-            for finding in findings:
-                session.execute_write(
-                    self._write_finding,
-                    finding.model_dump(),
-                )
-
     @staticmethod
-    def _write_account(tx, account_id: str) -> None:
+    def _write_all(
+        tx,
+        account_id: str,
+        principals: list[dict],
+        statements: list[dict],
+        trusts: list[dict],
+        findings: list[dict],
+    ) -> None:
         tx.run(
             """
             MERGE (a:Account {id: $account_id})
@@ -64,78 +81,60 @@ class GraphBuilder:
             account_id=account_id,
         ).consume()
 
-    @staticmethod
-    def _write_principal(
-        tx,
-        account_id: str,
-        principal: dict,
-    ) -> None:
         tx.run(
             """
             MATCH (a:Account {id: $account_id})
-            MERGE (p:Principal {id: $id})
-            SET
-                p.name = $name,
-                p.kind = $kind
+            UNWIND $principals AS principal
+            MERGE (p:Principal {id: principal.id})
+            SET p.name = principal.name,
+                p.kind = principal.kind,
+                p.arn = principal.arn
             MERGE (a)-[:CONTAINS]->(p)
             """,
             account_id=account_id,
-            id=principal["id"],
-            name=principal["name"],
-            kind=principal["kind"],
+            principals=principals,
         ).consume()
 
-        for trusted_principal in principal["trust"]:
-            tx.run(
-                """
-                MERGE (source:Principal {id: $source_id})
-                MERGE (target:Principal {id: $target_id})
-                MERGE (source)-[:TRUSTED_BY]->(target)
-                """,
-                source_id=principal["id"],
-                target_id=trusted_principal,
-            ).consume()
-
-        for statement_index, statement in enumerate(principal["policies"]):
-            statement_id = (
-                f"{principal['id']}:statement:{statement_index}"
-            )
-
-            tx.run(
-                """
-                MATCH (p:Principal {id: $principal_id})
-                MERGE (s:PolicyStatement {id: $statement_id})
-                SET
-                    s.effect = $effect,
-                    s.actions = $actions,
-                    s.resources = $resources
-                MERGE (p)-[:HAS_STATEMENT]->(s)
-                """,
-                principal_id=principal["id"],
-                statement_id=statement_id,
-                effect=statement["effect"],
-                actions=statement["actions"],
-                resources=statement["resources"],
-            ).consume()
-
-    @staticmethod
-    def _write_finding(tx, finding: dict) -> None:
         tx.run(
             """
-            MERGE (f:Finding {id: $id})
-            SET
-                f.primitive = $primitive,
-                f.title = $title,
-                f.severity = $severity,
-                f.score = $score,
-                f.evidence = $evidence,
-                f.remediation = $remediation
+            UNWIND $trusts AS trust
+            MERGE (source:Principal {id: trust.trusted_principal})
+            MERGE (role:Principal {id: trust.role_id})
+            MERGE (source)-[:TRUSTED_TO_ASSUME]->(role)
+            """,
+            trusts=trusts,
+        ).consume()
 
-            MERGE (source:Principal {id: $source})
-            MERGE (target:Principal {id: $target})
+        tx.run(
+            """
+            UNWIND $statements AS statement
+            MATCH (p:Principal {id: statement.principal_id})
+            MERGE (s:PolicyStatement {id: statement.statement_id})
+            SET s.effect = statement.effect,
+                s.actions = statement.actions,
+                s.resources = statement.resources,
+                s.conditional = statement.conditional,
+                s.unsupported_elements = statement.unsupported_elements,
+                s.source_policy_arn = statement.source_policy_arn
+            MERGE (p)-[:HAS_STATEMENT]->(s)
+            """,
+            statements=statements,
+        ).consume()
 
+        tx.run(
+            """
+            UNWIND $findings AS finding
+            MERGE (f:Finding {id: finding.id})
+            SET f.primitive = finding.primitive,
+                f.title = finding.title,
+                f.severity = finding.severity,
+                f.score = finding.score,
+                f.evidence = finding.evidence,
+                f.remediation = finding.remediation
+            MERGE (source:Principal {id: finding.source})
+            MERGE (target:Principal {id: finding.target})
             MERGE (source)-[:HAS_ATTACK_PATH]->(f)
             MERGE (f)-[:TARGETS]->(target)
             """,
-            **finding,
+            findings=findings,
         ).consume()
