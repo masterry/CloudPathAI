@@ -1,0 +1,4 @@
+comparison_id,higher_readiness,lower_readiness,criterion,justification
+R01,ASSUME_ADMIN_ROLE,UPDATE_ASSUME_ROLE_POLICY,established_vs_prerequisite,Role assumption is supported by modeled authorization and trust while trust modification alone does not establish successful assumption
+R02,CREATE_ACCESS_KEY,UPDATE_ASSUME_ROLE_POLICY,established_vs_prerequisite,Credential creation for an administrator user provides a direct credential-acquisition route while trust modification alone is a prerequisite
+R03,PASSROLE_LAMBDA,UPDATE_ASSUME_ROLE_POLICY,complete_modeled_chain_vs_prerequisite,The Lambda detector checks the modeled PassRole creation invocation and service trust requirements while trust modification alone is a prerequisite
