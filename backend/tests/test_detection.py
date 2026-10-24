@@ -33,7 +33,8 @@ def _admin_role(name: str = "admin-role", trust: list[str] | None = None) -> Pri
 
 
 def test_sample_detects_expected_core_primitives() -> None:
-    primitives = {finding.primitive for finding in detect_primitives(load_sample())}
+    primitives = {
+        finding.primitive for finding in detect_primitives(load_sample())}
     assert {
         "ASSUME_ADMIN_ROLE",
         "CREATE_ACCESS_KEY",
@@ -58,7 +59,8 @@ def test_assume_role_detects_real_arn_resource() -> None:
     )
     target = _admin_role("operations-admin", trust=[attacker.id])
 
-    findings = detect_primitives(Dataset(account_id=ACCOUNT, principals=[attacker, target]))
+    findings = detect_primitives(
+        Dataset(account_id=ACCOUNT, principals=[attacker, target]))
     assert [f.primitive for f in findings] == ["ASSUME_ADMIN_ROLE"]
     assert findings[0].target == target.id
     assert target.arn in findings[0].evidence[0]
@@ -79,7 +81,79 @@ def test_assume_role_requires_trust() -> None:
         ],
     )
     target = _admin_role("operations-admin", trust=[])
-    assert not detect_primitives(Dataset(account_id=ACCOUNT, principals=[attacker, target]))
+    assert not detect_primitives(
+        Dataset(account_id=ACCOUNT, principals=[attacker, target]))
+
+
+def test_direct_same_account_user_trust_without_identity_allow() -> None:
+    """Direct same-account IAM user trust can authorize AssumeRole."""
+    attacker = Principal(
+        id="user:charlie",
+        arn=_arn("user", "charlie"),
+        name="charlie",
+        kind="User",
+        policies=[],
+    )
+
+    target = _admin_role(
+        "operations-admin",
+        trust=[attacker.id],
+    )
+
+    dataset = Dataset(
+        account_id=ACCOUNT,
+        principals=[attacker, target],
+    )
+
+    findings = detect_primitives(dataset)
+
+    assert any(
+        finding.primitive == "ASSUME_ADMIN_ROLE"
+        and finding.source == attacker.id
+        and finding.target == target.id
+        for finding in findings
+    )
+
+
+def test_direct_same_account_trust_respects_explicit_deny() -> None:
+    """An explicit Deny must block direct-trust role assumption."""
+    attacker = Principal(
+        id="user:charlie",
+        arn=_arn("user", "charlie"),
+        name="charlie",
+        kind="User",
+        policies=[
+            Statement(
+                effect="Allow",
+                actions=["sts:AssumeRole"],
+                resources=[_arn("role", "operations-admin")],
+            ),
+            Statement(
+                effect="Deny",
+                actions=["sts:AssumeRole"],
+                resources=[_arn("role", "operations-admin")],
+            ),
+        ],
+    )
+
+    target = _admin_role(
+        "operations-admin",
+        trust=[attacker.id],
+    )
+
+    dataset = Dataset(
+        account_id=ACCOUNT,
+        principals=[attacker, target],
+    )
+
+    findings = detect_primitives(dataset)
+
+    assert not any(
+        finding.primitive == "ASSUME_ADMIN_ROLE"
+        and finding.source == attacker.id
+        and finding.target == target.id
+        for finding in findings
+    )
 
 
 def test_create_access_key_detects_real_user_arn() -> None:
@@ -109,7 +183,8 @@ def test_explicit_deny_prevents_create_access_key_finding() -> None:
         name="bob",
         kind="User",
         policies=[
-            Statement(effect="Allow", actions=["iam:CreateAccessKey"], resources=["*"]),
+            Statement(effect="Allow", actions=[
+                      "iam:CreateAccessKey"], resources=["*"]),
             Statement(
                 effect="Deny",
                 actions=["iam:CreateAccessKey"],
@@ -131,16 +206,19 @@ def test_passrole_lambda_requires_lambda_trust() -> None:
         policies=[
             Statement(
                 effect="Allow",
-                actions=["iam:PassRole", "lambda:CreateFunction", "lambda:InvokeFunction"],
+                actions=["iam:PassRole", "lambda:CreateFunction",
+                         "lambda:InvokeFunction"],
                 resources=["*"],
             )
         ],
     )
     without_trust = _admin_role("lambda-admin", trust=[])
-    with_trust = _admin_role("lambda-admin-2", trust=["service:lambda.amazonaws.com"])
+    with_trust = _admin_role(
+        "lambda-admin-2", trust=["service:lambda.amazonaws.com"])
 
     findings = detect_primitives(
-        Dataset(account_id=ACCOUNT, principals=[attacker, without_trust, with_trust])
+        Dataset(account_id=ACCOUNT, principals=[
+                attacker, without_trust, with_trust])
     )
     passrole = [f for f in findings if f.primitive == "PASSROLE_LAMBDA"]
     assert len(passrole) == 1
@@ -161,7 +239,8 @@ def test_modify_own_role_uses_role_arn() -> None:
             )
         ],
     )
-    findings = detect_primitives(Dataset(account_id=ACCOUNT, principals=[role]))
+    findings = detect_primitives(
+        Dataset(account_id=ACCOUNT, principals=[role]))
     assert {f.primitive for f in findings} == {"MODIFY_OWN_ROLE"}
 
 
@@ -182,7 +261,8 @@ def test_create_policy_version_requires_policy_attached_to_caller() -> None:
             )
         ],
     )
-    assert not detect_primitives(Dataset(account_id=ACCOUNT, principals=[principal]))
+    assert not detect_primitives(
+        Dataset(account_id=ACCOUNT, principals=[principal]))
 
     principal.policies.append(
         Statement(
@@ -191,7 +271,8 @@ def test_create_policy_version_requires_policy_attached_to_caller() -> None:
             resources=[attached],
         )
     )
-    findings = detect_primitives(Dataset(account_id=ACCOUNT, principals=[principal]))
+    findings = detect_primitives(
+        Dataset(account_id=ACCOUNT, principals=[principal]))
     assert {f.primitive for f in findings} == {"CREATE_POLICY_VERSION"}
 
 
@@ -210,8 +291,10 @@ def test_update_trust_policy_wording_is_conservative() -> None:
         ],
     )
     target = _admin_role("admin-role")
-    findings = detect_primitives(Dataset(account_id=ACCOUNT, principals=[attacker, target]))
-    finding = next(f for f in findings if f.primitive == "UPDATE_ASSUME_ROLE_POLICY")
+    findings = detect_primitives(
+        Dataset(account_id=ACCOUNT, principals=[attacker, target]))
+    finding = next(f for f in findings if f.primitive ==
+                   "UPDATE_ASSUME_ROLE_POLICY")
     assert "prerequisite" in " ".join(finding.evidence).lower()
 
 

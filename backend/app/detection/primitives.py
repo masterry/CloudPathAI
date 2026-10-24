@@ -3,6 +3,21 @@ from app.models.domain import Dataset, Finding, Principal
 from app.policy.evaluator import is_administrator, is_allowed
 
 
+def _has_explicit_deny(
+    principal: Principal,
+    action: str,
+    resource: str,
+) -> bool:
+    """Check supported identity-policy statements for an applicable Deny."""
+    from app.policy.evaluator import _statement_matches
+
+    return any(
+        statement.effect == "Deny"
+        and _statement_matches(statement, action, resource)
+        for statement in principal.policies
+    )
+
+
 def _finding(
     *,
     finding_id: str,
@@ -41,7 +56,25 @@ def _detect_assume_admin_role(
             continue
         if principal.id not in target.trust:
             continue
-        if not is_allowed(principal, "sts:AssumeRole", target.resource):
+
+        identity_allowed = is_allowed(
+            principal, "sts:AssumeRole", target.resource
+        )
+
+        direct_same_account_user_trust = (
+            principal.kind == "User"
+            and principal.arn.startswith(
+                f"arn:aws:iam::{dataset.account_id}:user/"
+            )
+            and principal.id in target.trust
+        )
+
+        if _has_explicit_deny(
+            principal, "sts:AssumeRole", target.resource
+        ):
+            continue
+
+        if not (identity_allowed or direct_same_account_user_trust):
             continue
 
         findings.append(
@@ -51,9 +84,10 @@ def _detect_assume_admin_role(
                 title="Principal can assume an administrator role",
                 source=principal.id,
                 target=target.id,
-                risk_factors=RiskFactors(impact=100, exploitability=90, confidence=95),
+                risk_factors=RiskFactors(
+                    impact=100, exploitability=90, confidence=95),
                 evidence=[
-                    f"{principal.id} is allowed sts:AssumeRole on {target.resource}",
+                    f"{principal.id} can assume {target.resource} through identity permissions or direct same-account trust",
                     f"{target.id} trusts {principal.id}",
                     f"{target.id} has unconditional administrator-level permissions",
                 ],
@@ -90,7 +124,8 @@ def _detect_create_access_key(
                 title="Principal can create keys for an administrator user",
                 source=principal.id,
                 target=target.id,
-                risk_factors=RiskFactors(impact=100, exploitability=90, confidence=95),
+                risk_factors=RiskFactors(
+                    impact=100, exploitability=90, confidence=95),
                 evidence=[
                     f"{principal.id} is allowed iam:CreateAccessKey on {target.resource}",
                     f"{target.id} has unconditional administrator-level permissions",
@@ -135,7 +170,8 @@ def _detect_passrole_lambda(
                 title="Principal can pass an administrator role to Lambda",
                 source=principal.id,
                 target=target.id,
-                risk_factors=RiskFactors(impact=100, exploitability=90, confidence=95),
+                risk_factors=RiskFactors(
+                    impact=100, exploitability=90, confidence=95),
                 evidence=[
                     f"{principal.id} is allowed iam:PassRole on {target.resource}",
                     f"{principal.id} has unconditional Lambda create/invoke permissions on *",
@@ -172,7 +208,8 @@ def _detect_role_policy_escalation(principal: Principal) -> list[Finding]:
             title="Role can modify its own permissions",
             source=principal.id,
             target=principal.id,
-            risk_factors=RiskFactors(impact=90, exploitability=75, confidence=90),
+            risk_factors=RiskFactors(
+                impact=90, exploitability=75, confidence=90),
             evidence=[
                 f"{principal.id} is allowed {action} on {principal.resource}"
                 for action in matched_actions
@@ -211,7 +248,8 @@ def _detect_create_policy_version(principal: Principal) -> list[Finding]:
             title="Principal can version a managed policy that grants its permissions",
             source=principal.id,
             target=principal.id,
-            risk_factors=RiskFactors(impact=95, exploitability=80, confidence=90),
+            risk_factors=RiskFactors(
+                impact=95, exploitability=80, confidence=90),
             evidence=[
                 f"{principal.id} is allowed iam:CreatePolicyVersion on {policy_arn}"
                 for policy_arn in modifiable_policies
@@ -239,7 +277,8 @@ def _detect_attach_user_policy(principal: Principal) -> list[Finding]:
             title="User can attach a managed policy to itself",
             source=principal.id,
             target=principal.id,
-            risk_factors=RiskFactors(impact=95, exploitability=85, confidence=85),
+            risk_factors=RiskFactors(
+                impact=95, exploitability=85, confidence=85),
             evidence=[
                 f"{principal.id} is allowed iam:AttachUserPolicy on {principal.resource}",
                 "This permission can enable self-escalation unless policy selection is constrained",
@@ -274,7 +313,8 @@ def _detect_update_trust_policy(
                 title="Principal can weaken an administrator role trust policy",
                 source=principal.id,
                 target=target.id,
-                risk_factors=RiskFactors(impact=100, exploitability=70, confidence=85),
+                risk_factors=RiskFactors(
+                    impact=100, exploitability=70, confidence=85),
                 evidence=[
                     f"{principal.id} is allowed iam:UpdateAssumeRolePolicy on {target.resource}",
                     f"{target.id} has unconditional administrator-level permissions",
