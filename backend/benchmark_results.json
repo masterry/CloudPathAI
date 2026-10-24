@@ -3,28 +3,28 @@
     "principals": 11,
     "findings": 10,
     "paths": 10,
-    "detection_ms_mean": 0.276,
+    "detection_ms_mean": 0.279,
     "path_search_ms_mean": 0.018
   },
   {
     "principals": 101,
     "findings": 100,
     "paths": 100,
-    "detection_ms_mean": 10.603,
-    "path_search_ms_mean": 0.145
+    "detection_ms_mean": 10.632,
+    "path_search_ms_mean": 0.15
   },
   {
     "principals": 501,
     "findings": 500,
     "paths": 500,
-    "detection_ms_mean": 237.572,
-    "path_search_ms_mean": 1.812
+    "detection_ms_mean": 240.834,
+    "path_search_ms_mean": 0.813
   },
   {
     "principals": 1001,
     "findings": 1000,
     "paths": 1000,
-    "detection_ms_mean": 945.327,
-    "path_search_ms_mean": 2.638
+    "detection_ms_mean": 958.703,
+    "path_search_ms_mean": 1.687
   }
 ]
