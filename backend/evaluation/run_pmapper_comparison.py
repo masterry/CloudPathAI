@@ -41,18 +41,35 @@ def pmapper_node(arn, identifier, policies, trust, admin):
     )
 
 
-def run_pmapper(trusted, allow_assume=True):
+def run_pmapper(trusted, allow_assume=True, explicit_deny=False):
     policy = Policy(
         arn=f"arn:aws:iam::{ACCOUNT}:policy/AssumeRolePolicy",
         name="AssumeRolePolicy",
+
         policy_doc={
             "Version": "2012-10-17",
-            "Statement": [{
-                "Effect": "Allow",
-                "Action": "sts:AssumeRole" if allow_assume else "s3:ListBucket",
-                "Resource": ROLE_ARN,
-            }],
+            "Statement": (
+                [{
+                    "Effect": "Allow",
+                    "Action": (
+                        "sts:AssumeRole"
+                        if allow_assume
+                        else "s3:ListBucket"
+                    ),
+                    "Resource": ROLE_ARN,
+                }]
+                + (
+                    [{
+                        "Effect": "Deny",
+                        "Action": "sts:AssumeRole",
+                        "Resource": ROLE_ARN,
+                    }]
+                    if explicit_deny
+                    else []
+                )
+            ),
         },
+
     )
 
     user = pmapper_node(
@@ -97,25 +114,39 @@ def run_pmapper(trusted, allow_assume=True):
     return bool(detected), len(edges), len(path) if path else 0
 
 
-def run_cloudpath(trusted, allow_assume=True):
+def run_cloudpath(trusted, allow_assume=True, explicit_deny=False):
     user = Principal(
         id="user:alice",
         arn=USER_ARN,
         name="alice",
         kind="User",
+
         policies=(
-            [
-                Statement(
-                    effect="Allow",
-                    actions=["sts:AssumeRole"],
-                    resources=[ROLE_ARN],
-                )
-            ]
-            if allow_assume
-            else []
+            (
+                [
+                    Statement(
+                        effect="Allow",
+                        actions=["sts:AssumeRole"],
+                        resources=[ROLE_ARN],
+                    )
+                ]
+                if allow_assume
+                else []
+            )
+            +
+            (
+                [
+                    Statement(
+                        effect="Deny",
+                        actions=["sts:AssumeRole"],
+                        resources=[ROLE_ARN],
+                    )
+                ]
+                if explicit_deny
+                else []
+            )
         ),
-        trust=[],
-        attached_managed_policy_arns=[],
+
     )
 
     role = Principal(
@@ -161,20 +192,22 @@ def classify(expected, detected):
 
 
 def main():
+    # name, trusted, identity_allow, explicit_deny, expected
     cases = [
-        ("STS-01-valid-assumption", True, True, True),
-        ("STS-02-untrusted-user", False, True, False),
-        ("STS-03-direct-trust-no-identity-allow", True, False, True),
+        ("STS-01-valid-assumption", True, True, False, True),
+        ("STS-02-untrusted-user", False, True, False, False),
+        ("STS-03-direct-trust-no-identity-allow", True, False, False, True),
+        ("STS-04-explicit-identity-deny", True, True, True, False),
     ]
 
     rows = []
 
-    for case_name, trusted, allow_assume, expected in cases:
+    for case_name, trusted, allow_assume, explicit_deny, expected in cases:
         pmapper_detected, edges, path_length = run_pmapper(
-            trusted, allow_assume
+            trusted, allow_assume, explicit_deny
         )
         cloudpath_detected, cloudpath_findings = run_cloudpath(
-            trusted, allow_assume
+            trusted, allow_assume, explicit_deny
         )
 
         rows.append({
