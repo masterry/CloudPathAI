@@ -1,0 +1,4 @@
+scenario,expected_escalation,cloudpath_detected,cloudpath_outcome,cloudpath_matching_findings,pmapper_detected,pmapper_outcome,pmapper_edges,pmapper_path_length,tools_agree
+STS-01-valid-assumption,True,True,TP,1,True,TP,1,1,True
+STS-02-untrusted-user,False,False,TN,0,False,TN,0,0,True
+STS-03-direct-trust-no-identity-allow,True,False,FN,0,True,TP,1,1,False
