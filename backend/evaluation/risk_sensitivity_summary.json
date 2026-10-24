@@ -1,0 +1,54 @@
+{
+  "evaluation_type": "weight_sensitivity_analysis",
+  "scenario_count": 7,
+  "weight_schemes_tested": 5,
+  "minimum_spearman_rho": 0.8233293074216318,
+  "maximum_spearman_rho": 0.8233293074216318,
+  "results": [
+    {
+      "scheme": "balanced",
+      "impact_weight": 0.4,
+      "exploitability_weight": 0.4,
+      "confidence_weight": 0.2,
+      "spearman_rho": 0.8233293074216318,
+      "mean_absolute_error": 4.8571
+    },
+    {
+      "scheme": "impact_focused",
+      "impact_weight": 0.6,
+      "exploitability_weight": 0.25,
+      "confidence_weight": 0.15,
+      "spearman_rho": 0.8233293074216318,
+      "mean_absolute_error": 2.3929
+    },
+    {
+      "scheme": "exploitability_focused",
+      "impact_weight": 0.25,
+      "exploitability_weight": 0.6,
+      "confidence_weight": 0.15,
+      "spearman_rho": 0.8233293074216318,
+      "mean_absolute_error": 7.3571
+    },
+    {
+      "scheme": "confidence_focused",
+      "impact_weight": 0.3,
+      "exploitability_weight": 0.3,
+      "confidence_weight": 0.4,
+      "spearman_rho": 0.8233293074216318,
+      "mean_absolute_error": 5.3571
+    },
+    {
+      "scheme": "equal_weights",
+      "impact_weight": 0.3333333333333333,
+      "exploitability_weight": 0.3333333333333333,
+      "confidence_weight": 0.3333333333333333,
+      "spearman_rho": 0.8233293074216318,
+      "mean_absolute_error": 5.1905
+    }
+  ],
+  "limitations": [
+    "All schemes reuse the same hypothetical reference factors.",
+    "The seven scenarios are synthetic.",
+    "Weight variation does not provide independent ground truth."
+  ]
+}

@@ -1,0 +1,6 @@
+scheme,impact_weight,exploitability_weight,confidence_weight,spearman_rho,mean_absolute_error
+balanced,0.4,0.4,0.2,0.8233293074216318,4.8571
+impact_focused,0.6,0.25,0.15,0.8233293074216318,2.3929
+exploitability_focused,0.25,0.6,0.15,0.8233293074216318,7.3571
+confidence_focused,0.3,0.3,0.4,0.8233293074216318,5.3571
+equal_weights,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.8233293074216318,5.1905

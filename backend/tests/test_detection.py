@@ -302,3 +302,42 @@ def test_scores_are_bounded_and_paths_are_generated() -> None:
     findings = detect_primitives(load_sample())
     assert all(0 <= finding.score <= 100 for finding in findings)
     assert build_attack_paths(findings)
+
+
+def test_conditional_assume_role_allow_does_not_produce_finding() -> None:
+    """Unverified conditional authorization must not create a risk finding."""
+    attacker = Principal(
+        id="role:developer",
+        arn=_arn("role", "developer"),
+        name="developer",
+        kind="Role",
+        policies=[
+            Statement(
+                effect="Allow",
+                actions=["sts:AssumeRole"],
+                resources=[_arn("role", "operations-admin")],
+                condition={
+                    "Bool": {
+                        "aws:MultiFactorAuthPresent": "true"
+                    }
+                },
+            )
+        ],
+    )
+
+    target = _admin_role(
+        "operations-admin",
+        trust=[attacker.id],
+    )
+
+    findings = detect_primitives(
+        Dataset(
+            account_id=ACCOUNT,
+            principals=[attacker, target],
+        )
+    )
+
+    assert not any(
+        finding.primitive == "ASSUME_ADMIN_ROLE"
+        for finding in findings
+    )

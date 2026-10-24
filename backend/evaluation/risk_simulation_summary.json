@@ -1,0 +1,17 @@
+{
+  "evaluation_type": "simulation_based",
+  "scenario_count": 7,
+  "spearman_rho": 0.8233293074216318,
+  "mean_absolute_error": 4.857142857142857,
+  "reference_weights": {
+    "impact": 0.4,
+    "exploitability": 0.4,
+    "confidence": 0.2
+  },
+  "limitations": [
+    "Reference scores are hypothetical modeling assumptions.",
+    "No independent expert ratings were collected for this simulation.",
+    "Synthetic scenarios do not demonstrate live AWS exploitation.",
+    "Reference factors are defined by primitive, not individual IAM context."
+  ]
+}

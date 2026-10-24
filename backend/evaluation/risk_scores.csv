@@ -1,0 +1,5 @@
+finding_id,primitive,source,target,cloudpath_score,severity,expert_score
+passrole-lambda:user:alice:role:lambda-admin,PASSROLE_LAMBDA,user:alice,role:lambda-admin,96,critical,
+create-access-key:user:bob:user:admin-user,CREATE_ACCESS_KEY,user:bob,user:admin-user,96,critical,
+assume-admin-role:user:charlie:role:operations-admin,ASSUME_ADMIN_ROLE,user:charlie,role:operations-admin,96,critical,
+modify-own-role:role:dev-role,MODIFY_OWN_ROLE,role:dev-role,role:dev-role,86,high,

@@ -1,0 +1,8 @@
+scenario,primitive,source,target,expert_1_score,expert_2_score
+S01_assume_admin_allowed,ASSUME_ADMIN_ROLE,user:alice,role:admin-role,,
+S03_create_admin_access_key,CREATE_ACCESS_KEY,user:bob,user:admin-user,,
+S05_passrole_lambda,PASSROLE_LAMBDA,user:alice,role:lambda-admin,,
+S07_modify_own_role,MODIFY_OWN_ROLE,role:dev,role:dev,,
+S09_create_attached_policy_version,CREATE_POLICY_VERSION,user:editor,user:editor,,
+S11_attach_own_user_policy,ATTACH_USER_POLICY,user:alice,user:alice,,
+S13_update_admin_trust,UPDATE_ASSUME_ROLE_POLICY,user:alice,role:admin-role,,

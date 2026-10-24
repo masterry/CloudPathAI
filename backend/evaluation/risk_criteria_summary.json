@@ -1,0 +1,10 @@
+{
+  "validation_type": "standards_informed_synthetic_prerequisite",
+  "criteria_total": 7,
+  "criteria_passed": 7,
+  "criteria_failed": 0,
+  "positive_scenarios_detected": 7,
+  "negative_scenarios_suppressed": 7,
+  "independent_expert_validation": false,
+  "numerical_risk_score_calibration": false
+}

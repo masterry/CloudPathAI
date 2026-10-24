@@ -1,0 +1,8 @@
+scenario,finding_id,primitive,source,target,cloudpath_score,severity,expert_1_score,expert_2_score
+S01_assume_admin_allowed,assume-admin-role:user:alice:role:admin-role,ASSUME_ADMIN_ROLE,user:alice,role:admin-role,96,critical,,
+S03_create_admin_access_key,create-access-key:user:bob:user:admin-user,CREATE_ACCESS_KEY,user:bob,user:admin-user,96,critical,,
+S05_passrole_lambda,passrole-lambda:user:alice:role:lambda-admin,PASSROLE_LAMBDA,user:alice,role:lambda-admin,96,critical,,
+S07_modify_own_role,modify-own-role:role:dev,MODIFY_OWN_ROLE,role:dev,role:dev,86,high,,
+S09_create_attached_policy_version,create-policy-version:user:editor,CREATE_POLICY_VERSION,user:editor,user:editor,90,critical,,
+S11_attach_own_user_policy,attach-user-policy:user:alice,ATTACH_USER_POLICY,user:alice,user:alice,90,critical,,
+S13_update_admin_trust,update-trust-policy:user:alice:role:admin-role,UPDATE_ASSUME_ROLE_POLICY,user:alice,role:admin-role,88,high,,

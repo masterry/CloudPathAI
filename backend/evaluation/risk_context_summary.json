@@ -1,0 +1,9 @@
+{
+  "scenario_count": 2,
+  "both_detected": true,
+  "same_primitive": true,
+  "same_score": true,
+  "score_difference": 0,
+  "interpretation": "Tests whether the model differentiates authorization mechanisms within a detected primitive; equal scores do not imply incorrect risk calibration.",
+  "independent_expert_validation": false
+}

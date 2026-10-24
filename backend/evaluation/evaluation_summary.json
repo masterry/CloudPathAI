@@ -1,0 +1,10 @@
+{
+  "scenario_count": 14,
+  "true_positives": 7,
+  "false_positives": 0,
+  "true_negatives": 7,
+  "false_negatives": 0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "false_negative_rate": 0.0
+}

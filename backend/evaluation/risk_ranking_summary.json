@@ -1,0 +1,14 @@
+{
+  "primitive_count": 7,
+  "pair_count": 21,
+  "dominance_comparisons": 13,
+  "dominance_consistent": 13,
+  "score_ties": 4,
+  "unique_scores": 4,
+  "score_distribution": {
+    "96": 3,
+    "86": 1,
+    "90": 2,
+    "88": 1
+  }
+}

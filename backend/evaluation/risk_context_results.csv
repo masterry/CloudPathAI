@@ -1,0 +1,3 @@
+scenario,identity_policy_allow,direct_same_account_trust,primitive,score,severity
+STS-01-valid-assumption,True,True,ASSUME_ADMIN_ROLE,96,critical
+STS-03-direct-trust-no-identity-allow,False,True,ASSUME_ADMIN_ROLE,96,critical

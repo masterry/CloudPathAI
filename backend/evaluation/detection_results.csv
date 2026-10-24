@@ -1,0 +1,15 @@
+scenario,expected_primitive,detected_primitives,outcome
+S01_assume_admin_allowed,ASSUME_ADMIN_ROLE,ASSUME_ADMIN_ROLE,TP
+S02_assume_admin_no_trust,NONE,NONE,TN
+S03_create_admin_access_key,CREATE_ACCESS_KEY,CREATE_ACCESS_KEY,TP
+S04_create_access_key_wrong_resource,NONE,NONE,TN
+S05_passrole_lambda,PASSROLE_LAMBDA,PASSROLE_LAMBDA,TP
+S06_passrole_missing_invoke,NONE,NONE,TN
+S07_modify_own_role,MODIFY_OWN_ROLE,MODIFY_OWN_ROLE,TP
+S08_modify_other_role_only,NONE,NONE,TN
+S09_create_attached_policy_version,CREATE_POLICY_VERSION,CREATE_POLICY_VERSION,TP
+S10_create_unattached_policy_version,NONE,NONE,TN
+S11_attach_own_user_policy,ATTACH_USER_POLICY,ATTACH_USER_POLICY,TP
+S12_attach_other_user_policy_only,NONE,NONE,TN
+S13_update_admin_trust,UPDATE_ASSUME_ROLE_POLICY,UPDATE_ASSUME_ROLE_POLICY,TP
+S14_update_nonadmin_trust,NONE,NONE,TN

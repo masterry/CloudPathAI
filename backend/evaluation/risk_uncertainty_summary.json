@@ -1,0 +1,37 @@
+{
+  "evaluation_type": "simulation_based_factor_uncertainty",
+  "scenario_count": 7,
+  "simulations": 5000,
+  "random_seed": 42,
+  "factor_uncertainty_points": 10,
+  "sampling_method": "Independent uniform perturbations within \u00b110 points, clipped to the 0\u2013100 range.",
+  "reference_weights": {
+    "impact": 0.4,
+    "exploitability": 0.4,
+    "confidence": 0.2
+  },
+  "spearman_rho": {
+    "mean": 0.6565489865796089,
+    "median": 0.7297691588509918,
+    "minimum": -0.20583232685540795,
+    "maximum": 0.9168894559922718,
+    "percentile_2_5": 0.16840826742715195,
+    "percentile_97_5": 0.9168894559922718
+  },
+  "mean_absolute_error": {
+    "mean": 6.7049941732129925,
+    "median": 6.6934682773253265,
+    "minimum": 3.265679268833854,
+    "maximum": 10.339831271693274,
+    "percentile_2_5": 4.9207703251166794,
+    "percentile_97_5": 8.577327764740602
+  },
+  "limitations": [
+    "Reference factor values are hypothetical.",
+    "Uniform uncertainty bounds are modeling assumptions.",
+    "Perturbations are independently sampled per scenario.",
+    "Results do not represent independent expert validation.",
+    "Synthetic configurations were not exploited in AWS.",
+    "The analysis does not test context-sensitive model scoring."
+  ]
+}
